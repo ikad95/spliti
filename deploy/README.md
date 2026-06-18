@@ -13,6 +13,30 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now spliti-app.service
 ```
 
+## Cloud Firestore mirror (optional)
+
+The unit wires `FIRESTORE_PROJECT_ID` / `FIRESTORE_CREDENTIALS` so each write is
+mirrored to Cloud Firestore (SQLite stays the source of truth; see
+`spliti/firestore_sync.py`). To enable it on the box:
+
+```sh
+# 1. install the extra dependency into the service venv
+/home/ubuntu/spliti/.venv/bin/pip install "google-cloud-firestore>=2.16"
+
+# 2. drop the service-account key where the unit points, locked down
+install -m 600 gcp_sa.json /home/ubuntu/spliti/gcp_sa.json
+
+# 3. (re)deploy the unit and restart
+sudo cp deploy/spliti-app.service /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl restart spliti-app.service
+```
+
+On startup the service back-fills all existing groups, then keeps Firestore
+converged on every write. To run on SQLite alone, comment out the two
+`Environment=FIRESTORE_*` lines. The service account needs the
+`roles/datastore.user` IAM role on the project (Firestore Security Rules don't
+apply to this server-side/admin access).
+
 ## Tunnel routing
 
 The cloudflared tunnel (`~/.cloudflared/config.yml`, service

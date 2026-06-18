@@ -12,6 +12,13 @@ ExecStart=/home/ubuntu/spliti/.venv/bin/uvicorn spliti.app:split_app --host 127.
 Restart=always
 RestartSec=3
 Environment=PATH=/home/ubuntu/spliti/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# Other settings (BASIC_AUTH_PASSWORD, MISTRAL_API_KEY, …) come from the .env in
+# WorkingDirectory. Optional Cloud Firestore mirror (see spliti/firestore_sync.py):
+# unset FIRESTORE_PROJECT_ID to run on SQLite alone. FIRESTORE_CREDENTIALS is the
+# Google service-account JSON path — keep it chmod 600 and out of git. Needs the
+# extra dep installed in the venv: pip install "google-cloud-firestore>=2.16".
+Environment=FIRESTORE_PROJECT_ID=spliti-754cb
+Environment=FIRESTORE_CREDENTIALS=/home/ubuntu/spliti/gcp_sa.json
 
 [Install]
 WantedBy=multi-user.target
